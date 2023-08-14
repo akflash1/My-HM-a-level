@@ -3,6 +3,9 @@ class Phone:
         self.number = ''
         self._incoming_calls = 0
 
+    def __str__(self):
+       return f'Number: {self.number}, _incoming_calls: {self._incoming_calls}'
+
     def set_number(self, number):
         self.number = number
 
@@ -12,11 +15,8 @@ class Phone:
     def get_receive(self):
         self._incoming_calls += 1
 
-    def get_total_calls(self):
-        return self._incoming_calls
-
     def save_calls_to_file(self, file_name):
-        with open(file_name, 'w') as file:
+        with open(file_name, 'a') as file:
             file.write("Total calls received: " + str(self._incoming_calls))
 
 phone1 = Phone()
