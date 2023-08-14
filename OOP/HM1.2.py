@@ -1,10 +1,19 @@
 class ChessPiece:
+    WHITE = 'white'
+    BLACK = 'black'
+
     def __init__(self, color, position):
         self.color = color
         self.position = position
 
+    def __str__(self):
+        return f'Color: {self.color}, Position: {self.position}'
+
     def change_color(self):
-        self.color = 'white' if self.color == 'black' else 'black'
+        if self.color == WHITE:
+            self.color = BLACK
+        else:
+            self.color = WHITE
 
     def is_within_board(self, x, y):
         return 0 <= x < 8 and 0 <= y < 8
