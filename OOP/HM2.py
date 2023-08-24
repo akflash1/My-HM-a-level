@@ -1,9 +1,12 @@
+import requests
 from datetime import datetime
 import traceback
 
+SATURDAY = 5
+SUNDAY = 6
+
 class Employee:
-    SATURDAY = 5
-    SUNDAY = 6
+
     WEEKEND = (SATURDAY, SUNDAY)
 
     def __init__(
@@ -55,8 +58,10 @@ class Developer(Employee):
             salary_for_one_day: int,
             email: str,
             tech_stack=None,
+            *args,
+            **kwargs,
     ):
-        super().__init__(name, salary_for_one_day, email)
+        super().__init__(name, salary_for_one_day, email, *args, **kwargs)
         self.tech_stack = tech_stack if tech_stack is not None else []
 
     def __eq__(self, other):
@@ -77,25 +82,64 @@ class Recruiter(Employee):
         return f'{super().work()} and start to hiring.'
 
 
-class EmailValidator(Employee):
+class Candidate(Employee):
+    def __init__(self,
+                first_name: str,
+                last_name: str,
+                email,
+                tech_stack: str,
+                main_skill: str,
+                main_skill_grade: str,
+    ):
+        self.first_name = first_name
+        self. last_name = last_name
+        self.email = email
+        self.tech_stack = tech_stack
+        self.main_skill = main_skill
+        self.main_skill_grade = main_skill_grade
+
+    @property
+    def full_name(self):
+        return f'{self.first_name} {self.last_name}'
+
+    @classmethod
+    def generate_candidates(cls, url):
+        response = requests.get(url)
+        candidates = []
+        lines = response.text.split('\n')
+        header = lines[0]
+        for line in lines[1:]:
+            parts = line.strip().split(',')
+            if len(parts) == 5:
+                first_name, last_name, email, tech_stack, main_skill_grade = parts
+                main_skill = tech_stack.split('|')[0]
+                candidate = cls(first_name, last_name, email, tech_stack, main_skill, main_skill_grade)
+                candidates.append(candidate)
+        return candidates
+
+
+class EmailValidator:
     def __init__(self, email: str):
         self.email = email
         self.error_logger = ErrorLogger()
 
-    def validate_email(self, new_email):
-        if new_email in self.existing_emails():
+    @classmethod
+    def validate_email(cls, new_email):
+        if new_email in cls.existing_emails():
             raise EmailAlreadyExistsException
-        self.email = new_email
-        return '@' in self.email
+        return '@' in new_email
 
-    def handle_validation_error(self):
+    def handle_validation_error(self, attempts = 0):
+        if attempts > 5:
+            print("Max attempts reached.")
+            return
         try:
             self.validate_email()
         except EmailAlreadyExistsException as e:
             error_message = traceback.format_exc()
             print("Validation error:", error_message)
             self.error_logger.log_error(error_message)
-            self.handle_validation_error()
+            self.handle_validation_error(attempts + 1)
 
     def existing_emails(self):
         with open('emails.csv', 'r') as file:
@@ -117,15 +161,15 @@ class EmailWriter(Employee):
 
 employee1 = Employee("John", 100, email="john@gmail.com")
 recruiter1 = Recruiter("Alice", 150, email="alice@gmail.com")
-developer1 = Developer("Bob", 200, tech_stack=["Python", "JavaScript"], email="bob.gmail.com")
+developer1 = Developer("Bob", 200, tech_stack=["Python", "JavaScript"], email="bobgmail.com")
 developer2 = Developer("Antony", 150, tech_stack=["Java", "C++"], email="ant@gmail.com")
 
+candidate_objects = Candidate.generate_candidates('https://bitbucket.org/ivnukov/lesson2/raw/4f59074e6fbb552398f87636b5bf089a1618da0a/candidates.csv')
 
-print(developer1.check_salary(10))
-print(developer2.check_salary(15))
-print(developer1.name)
-print(developer1.tech_stack)
-print(developer1.check_salary(20))
-print(developer2.name)
-print(developer2.tech_stack)
-print(developer2.check_salary(20))
+for candidate in candidate_objects:
+    print(f"Full Name: {candidate.full_name}")
+    print(f"Email: {candidate.email}")
+    print(f"Tech Stack: {candidate.tech_stack}")
+    print(f"Main Skill: {candidate.main_skill}")
+    print(f"Main Skill Grade: {candidate.main_skill_grade}")
+    print("---")
