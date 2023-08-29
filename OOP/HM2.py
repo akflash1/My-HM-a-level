@@ -5,6 +5,7 @@ import traceback
 SATURDAY = 5
 SUNDAY = 6
 
+
 class Employee:
 
     WEEKEND = (SATURDAY, SUNDAY)
@@ -81,7 +82,6 @@ class Recruiter(Employee):
     def work(self):
         return f'{super().work()} and start to hiring.'
 
-
 class Candidate(Employee):
     def __init__(self,
                 first_name: str,
@@ -119,8 +119,7 @@ class Candidate(Employee):
 
 
 class EmailValidator:
-    def __init__(self, email: str):
-        self.email = email
+    def __init__(self):
         self.error_logger = ErrorLogger()
 
     @classmethod
@@ -153,7 +152,7 @@ class ErrorLogger:
                 file.write(f'{datetime.now()} | {error_message}\n')
 
 
-class EmailWriter(Employee):
+class EmailWriter:
     def save_email(self, email: str):
         with open('emails.csv', 'a') as file:
             file.write(f'{self.email}\n')
@@ -173,3 +172,4 @@ for candidate in candidate_objects:
     print(f"Main Skill: {candidate.main_skill}")
     print(f"Main Skill Grade: {candidate.main_skill_grade}")
     print("---")
+
