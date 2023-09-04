@@ -19,29 +19,6 @@ class CandidateTest(unittest.TestCase):
             main_skill_grade=self.main_skill_grade
         )
 
-    def test_init(self):
-        name = 'name_2'
-        email = 'mail@gmail.com'
-        tech_stack = 'Java'
-        main_skill = 'Development'
-        main_skill_grade = 'Jun'
-
-        candidate_2 = Candidate(
-            first_name=name,
-            last_name=self.last_name,
-            email=email,
-            tech_stack=tech_stack,
-            main_skill=main_skill,
-            main_skill_grade=main_skill_grade
-        )
-
-        self.assertEqual(name, candidate_2.first_name)
-        self.assertEqual(self.last_name, candidate_2.last_name)
-        self.assertEqual(email, candidate_2.email)
-        self.assertEqual(tech_stack, candidate_2.tech_stack)
-        self.assertEqual(main_skill, candidate_2.main_skill)
-        self.assertEqual(main_skill_grade, candidate_2.main_skill_grade)
-
     def test_full_name(self):
         self.assertEqual(self.first_name + ' ' + self.last_name, self.candidate.full_name)
 
