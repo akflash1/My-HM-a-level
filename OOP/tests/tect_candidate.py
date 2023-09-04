@@ -45,6 +45,16 @@ class CandidateTest(unittest.TestCase):
     def test_full_name(self):
         self.assertEqual(self.first_name + ' ' + self.last_name, self.candidate.full_name)
 
+    @patch('requests.get')
+    def test_generate_candidates(self, mock_get):
+        mock_get.return_value.text = 'John,Doe,johndoe@gmail.com,Python|Java,Junior\n' \
+                                     'Alice,Smith,alice@gmail.com,JavaScript,Senior'
+
+        url = 'https://example.com/candidates.csv'
+        email_validator = EmailValidator()
+        email_validator.test_emails = ['alice@gmail.com']
+
+        candidates = Candidate.generate_candidates(url)
 
 if __name__ == '__main__':
     unittest.main()
