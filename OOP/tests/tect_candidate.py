@@ -28,10 +28,21 @@ class CandidateTest(unittest.TestCase):
                                      'Alice,Smith,alice@gmail.com,JavaScript,Senior'
 
         url = 'https://example.com/candidates.csv'
-        email_validator = EmailValidator()
-        email_validator.test_emails = ['alice@gmail.com']
 
         candidates = Candidate.generate_candidates(url)
+
+        self.assertEqual(len(candidates), 2)
+        self.assertEqual(candidates[0].first_name, 'John')
+        self.assertEqual(candidates[0].last_name, 'Doe')
+        self.assertEqual(candidates[0].email, 'johndoe@gmail.com')
+        self.assertEqual(candidates[0].tech_stack, 'Python|Java')
+        self.assertEqual(candidates[0].main_skill, 'Junior')
+
+        self.assertEqual(candidates[1].first_name, 'Alice')
+        self.assertEqual(candidates[1].last_name, 'Smith')
+        self.assertEqual(candidates[1].email, 'alice@gmail.com')
+        self.assertEqual(candidates[1].tech_stack, 'JavaScript')
+        self.assertEqual(candidates[1].main_skill, 'Senior')
 
 if __name__ == '__main__':
     unittest.main()
