@@ -5,9 +5,38 @@ import traceback
 SATURDAY = 5
 SUNDAY = 6
 
+class EmailAlreadyExistsException(Exception):
+    pass
+
+class EmailValidator:
+    def __init__(self):
+        self.error_logger = ErrorLogger()
+        self.emails = self.existing_emails()
+
+    def validate_email(self, new_email):
+        if new_email in self.emails:
+            raise EmailAlreadyExistsException
+        return '@' in new_email
+
+    def existing_emails(self):
+        with open('emails.csv', 'r') as file:
+            return file.read().splitlines()
+
+
+class ErrorLogger:
+    def log_error(self, error_message):
+        print("Logging error:", error_message)
+        with open('logs.txt', 'a') as file:
+            file.write(f'{datetime.now()} | {error_message}\n')
+
+
+class EmailWriter:
+    def save_email(self, email: str):
+        with open('emails.csv', 'a') as file:
+            file.write(f'{email}\n')
+
 
 class Employee:
-
     WEEKEND = (SATURDAY, SUNDAY)
 
     def __init__(
@@ -15,10 +44,15 @@ class Employee:
             name: str,
             salary_for_one_day: int,
             email: str,
+            email_validator: EmailValidator,
     ):
         self.name = name
         self.salary_for_one_day = salary_for_one_day
-        self.email = email
+        self.email_validator = email_validator
+        if self.email_validator.validate_email(email):
+            self.email = email
+            self.email_writer = EmailWriter()
+            self.email_writer.save_email(email)
 
     def work(self):
         return 'I come to the office.'
@@ -47,7 +81,7 @@ class Employee:
     def check_salary(self, days):
         weekday = datetime.now().weekday()
         if weekday not in self.WEEKEND:
-            return f'Salary for the transferred number of days: {self.salary_for_one_day * days}'
+            return f'Salary for {days} days: {self.salary_for_one_day * days}'
         else:
             return 'No salary today.'
 
@@ -75,24 +109,27 @@ class Developer(Employee):
         return Developer(new_name, new_salary, new_tech_stack, self.email)
 
     def work(self):
-        return f'{super().work()} and start to coding.'
+        return f'{super().work()} and start coding.'
 
 
 class Recruiter(Employee):
     def work(self):
-        return f'{super().work()} and start to hiring.'
+        return f'{super().work()} and start hiring.'
+
 
 class Candidate(Employee):
     def __init__(self,
                 first_name: str,
                 last_name: str,
-                email,
+                email: str,
                 tech_stack: str,
                 main_skill: str,
                 main_skill_grade: str,
+                *args,
+                **kwargs
     ):
         self.first_name = first_name
-        self. last_name = last_name
+        self.last_name = last_name
         self.email = email
         self.tech_stack = tech_stack
         self.main_skill = main_skill
@@ -117,51 +154,10 @@ class Candidate(Employee):
                 candidates.append(candidate)
         return candidates
 
-
-class EmailValidator:
-    def __init__(self):
-        self.error_logger = ErrorLogger()
-
-    @classmethod
-    def validate_email(cls, new_email):
-        if new_email in cls.existing_emails():
-            raise EmailAlreadyExistsException
-        return '@' in new_email
-
-    def handle_validation_error(self, attempts = 0):
-        if attempts > 5:
-            print("Max attempts reached.")
-            return
-        try:
-            self.validate_email()
-        except EmailAlreadyExistsException as e:
-            error_message = traceback.format_exc()
-            print("Validation error:", error_message)
-            self.error_logger.log_error(error_message)
-            self.handle_validation_error(attempts + 1)
-
-    def existing_emails(self):
-        with open('emails.csv', 'r') as file:
-            return file.read().splitlines()
-
-
-class ErrorLogger:
-    def log_error(self, error_message):
-            print("Logging error:", error_message)
-            with open('logs.txt', 'a') as file:
-                file.write(f'{datetime.now()} | {error_message}\n')
-
-
-class EmailWriter:
-    def save_email(self, email: str):
-        with open('emails.csv', 'a') as file:
-            file.write(f'{self.email}\n')
-
-
-employee1 = Employee("John", 100, email="john@gmail.com")
-recruiter1 = Recruiter("Alice", 150, email="alice@gmail.com")
-developer1 = Developer("Bob", 200, tech_stack=["Python", "JavaScript"], email="bobgmail.com")
-developer2 = Developer("Antony", 150, tech_stack=["Java", "C++"], email="ant@gmail.com")
+employee1 = Employee("John", 100, email="john@gmail.com", email_validator=EmailValidator())
+recruiter1 = Recruiter("Alice", 150, email="alice@gmail.com", email_validator=EmailValidator())
+developer1 = Developer("Bob", 200, tech_stack=["Python", "JavaScript"], email="bobgmail.com", email_validator=EmailValidator())
+developer2 = Developer("Antony", 150, tech_stack=["Java", "C++"], email="ant@gmail.com", email_validator=EmailValidator())
 
 candidate_objects = Candidate.generate_candidates('https://bitbucket.org/ivnukov/lesson2/raw/4f59074e6fbb552398f87636b5bf089a1618da0a/candidates.csv')
 
@@ -172,4 +168,3 @@ for candidate in candidate_objects:
     print(f"Main Skill: {candidate.main_skill}")
     print(f"Main Skill Grade: {candidate.main_skill_grade}")
     print("---")
-
