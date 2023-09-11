@@ -18,18 +18,6 @@ class EmailValidator:
             raise EmailAlreadyExistsException
         return '@' in new_email
 
-    def handle_validation_error(self, attempts=0):
-        if attempts > 5:
-            print("Max attempts reached.")
-            return
-        try:
-            self.validate_email()
-        except EmailAlreadyExistsException as e:
-            error_message = traceback.format_exc()
-            print("Validation error:", error_message)
-            self.error_logger.log_error(error_message)
-            self.handle_validation_error(attempts + 1)
-
     def existing_emails(self):
         with open('emails.csv', 'r') as file:
             return file.read().splitlines()
@@ -133,10 +121,12 @@ class Candidate(Employee):
     def __init__(self,
                 first_name: str,
                 last_name: str,
-                email,
+                email: str,
                 tech_stack: str,
                 main_skill: str,
                 main_skill_grade: str,
+                *args,
+                **kwargs
     ):
         self.first_name = first_name
         self.last_name = last_name
